@@ -1,0 +1,299 @@
+# 📘 PART 5: INTERVIEW PREPARATION & COMPARISON TABLES
+
+---
+
+# INTERVIEW PREPARATION
+
+## 🎯 Objective
+- Be ready for any CN question from any interviewer at any level
+- Know what depth each company expects
+- Handle tricky, misleading, and rapid-fire questions
+
+---
+
+## Beginner Interview Questions (Freshers / Internships)
+
+### Q1: What is a computer network?
+**A:** A collection of interconnected devices that communicate using defined protocols to share resources and data. The internet is the largest computer network.
+
+### Q2: What is the difference between LAN and WAN?
+**A:** LAN (Local Area Network) covers a small area like an office, is privately owned, has high speed and low latency. WAN (Wide Area Network) covers large geographic areas, often uses leased ISP lines, has lower speed and higher latency. The internet is the largest WAN.
+
+### Q3: What is a protocol?
+**A:** A set of rules governing how data is transmitted, formatted, and received across a network. Examples: HTTP for web, SMTP for email, TCP for reliable transport.
+
+### Q4: What is an IP address?
+**A:** A logical address assigned to every device on a network for identification and communication. IPv4 is 32-bit (e.g., 192.168.1.1), IPv6 is 128-bit.
+
+### Q5: What is a MAC address?
+**A:** A 48-bit physical address burned into a device's NIC (Network Interface Card), used for local network communication. Format: `AA:BB:CC:DD:EE:FF`. Unique per device globally.
+
+### Q6: What is a subnet mask?
+**A:** A 32-bit number that divides an IP address into network and host portions. Example: 255.255.255.0 (/24) means first 24 bits are network, last 8 are host.
+
+### Q7: What is DNS? Why is it needed?
+**A:** Domain Name System — translates human-readable domain names (google.com) to IP addresses (142.250.x.x). Humans can't memorize IP addresses for every website.
+
+### Q8: What is DHCP?
+**A:** Dynamic Host Configuration Protocol — automatically assigns IP addresses and network configuration (gateway, DNS) to devices using the DORA process (Discover, Offer, Request, Acknowledge).
+
+### Q9: Explain the OSI model layers.
+**A:** 7 layers top-to-bottom: Application (HTTP), Presentation (encryption), Session (dialog control), Transport (TCP/UDP), Network (IP routing), Data Link (MAC framing), Physical (bits on wire). Mnemonic: "All People Seem To Need Data Processing."
+
+### Q10: What is a firewall?
+**A:** A network security device that monitors and filters traffic based on predefined security rules. It acts as a barrier between trusted internal networks and untrusted external networks.
+
+---
+
+## Intermediate Interview Questions (Off-Campus / Service Companies)
+
+### Q11: Explain TCP 3-way handshake. Why 3 steps?
+**A:** SYN (client initiates) → SYN+ACK (server acknowledges and initiates back) → ACK (client acknowledges). 3 steps ensure both sides confirm connectivity and synchronize sequence numbers. 2 steps could cause half-open connections from delayed duplicate SYNs.
+
+### Q12: How does TCP ensure reliability?
+**A:** Sequence numbers (ordering), ACKs (confirmation), checksums (integrity), retransmission (on timeout or 3 dup ACKs), flow control (sliding window prevents receiver overflow), congestion control (prevents network overload).
+
+### Q13: What happens when you type a URL in the browser?
+**A:** URL parsing → DNS resolution (cache → recursive query) → TCP 3-way handshake → TLS handshake (if HTTPS) → HTTP request sent → server processes and responds → browser renders HTML/CSS/JS → additional resources fetched from CDN.
+
+### Q14: Explain subnetting with an example.
+**A:** Subnetting divides a network into smaller sub-networks. Example: 192.168.1.0/24 split into 4 subnets → borrow 2 bits → /26 mask → 4 subnets of 62 hosts each. Block size = 256-192 = 64. Subnets: .0, .64, .128, .192.
+
+### Q15: What is ARP and how does it work?
+**A:** Address Resolution Protocol maps IP → MAC within a LAN. Device broadcasts "Who has IP 192.168.1.5?" All devices receive it; only the target responds with its MAC address. Result is cached in ARP table.
+
+### Q16: TCP vs UDP — when to use which?
+**A:** TCP for reliability-critical apps (HTTP, FTP, email, SSH). UDP for speed-critical apps (video streaming, gaming, DNS queries, VoIP). UDP has lower overhead (8-byte vs 20+ byte header) and no handshake delay.
+
+### Q17: Explain NAT. Why was it created?
+**A:** Network Address Translation maps private IPs to public IPs. Created because IPv4 addresses (4.3B) ran out. PAT (Port Address Translation) allows many devices to share one public IP using different port numbers.
+
+### Q18: What is a VLAN?
+**A:** Virtual LAN — logically segments a physical switch into separate broadcast domains. Devices in different VLANs can't communicate without a Layer 3 device (router/L3 switch). Improves security and reduces broadcast traffic.
+
+### Q19: Explain flow control vs congestion control.
+**A:** Flow control prevents sender from overwhelming the **receiver** (uses receiver window/rwnd). Congestion control prevents sender from overwhelming the **network** (uses congestion window/cwnd). Both limit sending rate but for different reasons.
+
+### Q20: What is the difference between a hub, switch, and router?
+**A:** Hub (L1) broadcasts to all ports. Switch (L2) learns MACs and forwards to specific port. Router (L3) routes between networks using IP addresses. Each adds intelligence over the previous.
+
+---
+
+## Advanced Interview Questions (Product-Based Companies)
+
+### Q21: Explain TCP congestion control algorithms in detail.
+**A:** Slow Start: cwnd grows exponentially (double per RTT) until ssthresh. Congestion Avoidance (AIMD): cwnd grows linearly (+1 MSS per RTT). On timeout: ssthresh = cwnd/2, cwnd = 1 (Tahoe). On 3 dup ACKs: ssthresh = cwnd/2, cwnd = ssthresh (Reno — fast recovery). TCP CUBIC uses a cubic function for faster recovery in high-bandwidth networks.
+
+### Q22: How does HTTP/2 differ from HTTP/1.1? What about HTTP/3?
+**A:** HTTP/2: binary framing, multiplexing (multiple streams on 1 TCP connection), HPACK header compression, server push. HTTP/3: uses QUIC (UDP-based) instead of TCP, eliminates TCP head-of-line blocking, 0-RTT connection resumption, built-in encryption.
+
+### Q23: Explain the TLS 1.3 handshake and why it's faster.
+**A:** TLS 1.3 uses 1-RTT (vs 2-RTT in 1.2). ClientHello includes key share + supported groups. ServerHello includes key share + certificate + finished. Client sends finished. 0-RTT possible for returning clients (sends data in first flight). Removed RSA key exchange, only supports ephemeral DH for forward secrecy.
+
+### Q24: Design a CDN architecture. How does cache invalidation work?
+**A:** Edge servers in multiple PoPs, DNS-based routing to nearest edge, origin shield to reduce origin load. Cache invalidation: TTL-based (cache-control headers), purge API (manual invalidation), stale-while-revalidate (serve stale, update async). Challenges: cache coherency, long-tail content, dynamic content.
+
+### Q25: How does a load balancer maintain session persistence?
+**A:** Methods: (1) Cookie-based — LB sets a cookie with server ID, (2) IP hash — consistent server per client IP, (3) Session replication — sessions shared across servers (Redis/Memcached), (4) Sticky sessions — LB remembers client-server mapping. Best practice: make the app stateless and use external session store.
+
+### Q26: Explain BGP and why it matters.
+**A:** Border Gateway Protocol routes between Autonomous Systems (ISPs). Path vector protocol running on TCP port 179. Makes routing decisions based on policies, AS path length, and attributes. Critical for internet routing (~900K+ routes). BGP hijacking (announcing someone else's prefixes) is a real security threat.
+
+### Q27: How does Kubernetes networking work?
+**A:** Every pod gets a unique IP (flat network). CNI plugins (Calico, Flannel) implement networking. Services provide stable IPs: ClusterIP (internal), NodePort (external via node), LoadBalancer (cloud LB). Ingress for HTTP routing. Network policies for security.
+
+### Q28: Compare L4 vs L7 load balancing with use cases.
+**A:** L4: operates on IP/port, fast, no content inspection, good for TCP/UDP passthrough (databases, gaming). L7: inspects HTTP headers/URLs/cookies, can route by path (/api → service A, /web → service B), supports content-based routing, SSL termination, but slightly slower due to inspection overhead.
+
+### Q29: What is the TIME_WAIT state and why does it cause problems?
+**A:** After TCP termination, the active closer enters TIME_WAIT for 2×MSL (~120s). Purpose: ensure final ACK arrives and old packets expire. Problem: high-traffic servers accumulate thousands of TIME_WAIT sockets, exhausting ports. Solutions: SO_REUSEADDR, reduce MSL, connection pooling.
+
+### Q30: How would you debug a "connection timeout" vs "connection refused"?
+**A:** Connection timeout: server unreachable — check network path (traceroute), firewall rules, DNS resolution, server is down. Connection refused: server reachable but rejecting — service not running, wrong port, max connections reached, firewall ACL rejecting specifically.
+
+---
+
+## Tricky Conceptual Questions
+
+### Q31: Is ARP a Layer 2 or Layer 3 protocol?
+**A:** Trick question! ARP bridges both — it uses Layer 3 addresses (IP) to find Layer 2 addresses (MAC). In the TCP/IP model, it's placed at the Internet layer. The key thing is it operates between the two layers.
+
+### Q32: Can you have a TCP connection between two devices on different VLANs without a router?
+**A:** No. VLANs are separate broadcast domains. Even though the devices are on the same physical switch, inter-VLAN communication requires Layer 3 routing (router or L3 switch).
+
+### Q33: If TTL reaches 0, what happens?
+**A:** The router drops the packet and sends an ICMP Time Exceeded message back to the source. This is exactly how `traceroute` works — it sends packets with incrementing TTL (1, 2, 3...) and maps each hop from the ICMP responses.
+
+### Q34: Why does UDP have a checksum if it doesn't guarantee delivery?
+**A:** The checksum detects corruption — it tells the receiver "this data arrived intact." UDP just doesn't retransmit if something is lost. Detecting corruption is still important; the application can decide what to do about it.
+
+### Q35: Can a server initiate a TCP connection to a client?
+**A:** Yes! TCP is symmetric — either side can initiate. But in practice, NAT and firewalls usually prevent this because the client's port isn't open. Solutions: hole punching, WebSockets (client initiates, then bidirectional), or the client connecting first.
+
+### Q36: Why is the minimum Ethernet frame 64 bytes?
+**A:** For collision detection (CSMA/CD) to work, a frame must be long enough that the sender is still transmitting when a collision signal propagates back. With max cable length and propagation speed, 64 bytes is the minimum to detect collisions reliably.
+
+### Q37: What if two devices get the same IP from DHCP?
+**A:** This is an IP conflict. DHCP servers maintain a lease table to prevent this, but it can happen with static + DHCP mixed configs. Both devices experience connectivity issues. Resolution: identify via MAC address, release one lease.
+
+### Q38: Does HTTPS encrypt the URL?
+**A:** The URL path is encrypted (part of HTTP message inside TLS). But the domain name may leak through: (1) DNS query (plaintext unless DoH/DoT), (2) TLS SNI extension (plaintext in TLS 1.2, encrypted in TLS 1.3 with ECH). The IP address is always visible.
+
+---
+
+## Rapid-Fire Questions
+
+| Question | Answer |
+|----------|--------|
+| HTTP port? | 80 |
+| HTTPS port? | 443 |
+| DNS port? | 53 |
+| FTP ports? | 21 (control), 20 (data) |
+| SSH port? | 22 |
+| SMTP port? | 25 |
+| DHCP ports? | 67 (server), 68 (client) |
+| Telnet port? | 23 |
+| TCP header size? | 20-60 bytes |
+| UDP header size? | 8 bytes |
+| IPv4 address size? | 32 bits |
+| IPv6 address size? | 128 bits |
+| MAC address size? | 48 bits |
+| Ethernet MTU? | 1500 bytes |
+| Min Ethernet frame? | 64 bytes |
+| Max hops in RIP? | 15 (16 = unreachable) |
+| OSPF algorithm? | Dijkstra |
+| RIP algorithm? | Bellman-Ford |
+| OSI layers? | 7 |
+| TCP/IP layers? | 4 |
+| Full mesh links? | n(n-1)/2 |
+| Loopback IP? | 127.0.0.1 |
+| Broadcast MAC? | FF:FF:FF:FF:FF:FF |
+| Private IP ranges? | 10.x, 172.16-31.x, 192.168.x |
+| TCP uses which handshake? | 3-way (SYN, SYN+ACK, ACK) |
+| DHCP process? | DORA |
+| Which protocol resolves IP→MAC? | ARP |
+| Which protocol resolves domain→IP? | DNS |
+| Is HTTP stateful or stateless? | Stateless |
+
+---
+
+## Viva Questions (University/Academic)
+
+1. **Explain data encapsulation with a diagram** — data → segment → packet → frame → bits
+2. **Derive subnet for 192.168.1.0/24 needing 6 subnets** — borrow 3 bits = /27, 8 subnets of 30 hosts
+3. **Calculate CRC for given data and generator** — XOR-based binary division
+4. **How many parity bits for 16 data bits?** — 2^r ≥ 16+r+1, r=5 (2^5=32 ≥ 22)
+5. **Explain Dijkstra's algorithm for OSPF** — greedy shortest path from source to all nodes
+6. **Compare pure ALOHA and slotted ALOHA efficiency** — 18.4% vs 36.8%
+7. **Explain sliding window protocol with sender/receiver windows**
+8. **Draw TCP state diagram** — CLOSED → SYN_SENT → ESTABLISHED → FIN_WAIT → TIME_WAIT → CLOSED
+
+---
+
+# COMPARISON TABLES
+
+## Table 1: TCP vs UDP
+
+| Feature | TCP | UDP |
+|---------|-----|-----|
+| Connection | Connection-oriented | Connectionless |
+| Reliability | Guaranteed delivery | Best-effort |
+| Ordering | Yes | No |
+| Speed | Slower | Faster |
+| Header | 20-60 bytes | 8 bytes |
+| Flow control | Yes | No |
+| Congestion control | Yes | No |
+| Broadcast | No | Yes |
+| Overhead | High | Low |
+| Use | HTTP, FTP, SSH, Email | DNS, DHCP, Streaming, Gaming |
+
+## Table 2: IPv4 vs IPv6
+
+| Feature | IPv4 | IPv6 |
+|---------|------|------|
+| Size | 32-bit | 128-bit |
+| Notation | Dotted decimal | Hex colon |
+| Addresses | ~4.3 billion | ~3.4 × 10^38 |
+| Header | Variable (20-60B) | Fixed (40B) |
+| Checksum | Yes | No |
+| NAT | Required | Not needed |
+| IPSec | Optional | Mandatory |
+| Broadcast | Yes | No (multicast instead) |
+| Fragmentation | Routers & source | Source only |
+| Configuration | Manual/DHCP | Auto (SLAAC) |
+
+## Table 3: Hub vs Switch vs Router
+
+| Feature | Hub | Switch | Router |
+|---------|-----|--------|--------|
+| Layer | 1 (Physical) | 2 (Data Link) | 3 (Network) |
+| Addressing | None | MAC | IP |
+| Intelligence | None | MAC table | Routing table |
+| Broadcast domain | 1 | 1 (VLANs split) | Each port = 1 |
+| Collision domain | 1 | Per port | Per port |
+| Traffic | Floods all ports | Forwards to specific port | Routes between networks |
+| Speed | Shared | Dedicated | Depends |
+| Use | Obsolete | LAN | Inter-network |
+
+## Table 4: HTTP vs HTTPS
+
+| Feature | HTTP | HTTPS |
+|---------|------|-------|
+| Port | 80 | 443 |
+| Security | None (plaintext) | TLS encrypted |
+| Certificate | Not needed | Required (X.509) |
+| Speed | Slightly faster | Slightly slower (TLS overhead) |
+| SEO | Lower ranking | Higher ranking |
+| Data integrity | No | Yes |
+| Use | Internal/test only | Everything in production |
+
+## Table 5: Go-Back-N vs Selective Repeat
+
+| Feature | Go-Back-N | Selective Repeat |
+|---------|-----------|-----------------|
+| Sender window | 2^n - 1 | 2^(n-1) |
+| Receiver window | 1 | 2^(n-1) |
+| Retransmission | All from error | Only errored frame |
+| Buffering at receiver | No | Yes |
+| ACK type | Cumulative | Individual |
+| Efficiency | Lower | Higher |
+| Complexity | Simple | Complex |
+| Best for | Low error rate | High error rate |
+
+## Table 6: Circuit Switching vs Packet Switching
+
+| Feature | Circuit Switching | Packet Switching |
+|---------|------------------|------------------|
+| Path | Dedicated, fixed | Dynamic, variable |
+| Setup | Required (delay) | Not required |
+| Resources | Reserved (may waste) | Shared (efficient) |
+| Delay | Constant after setup | Variable per packet |
+| Order | Guaranteed | May arrive out of order |
+| Use | PSTN (telephone) | Internet |
+| Billing | Duration-based | Data volume-based |
+| Failure handling | Call drops | Packets reroute |
+
+## Table 7: OSI vs TCP/IP
+
+| Feature | OSI | TCP/IP |
+|---------|-----|--------|
+| Layers | 7 | 4 |
+| Origin | ISO | DARPA |
+| Nature | Theoretical | Practical |
+| Approach | Model → Protocols | Protocols → Model |
+| Session layer | Yes | Merged into Application |
+| Presentation layer | Yes | Merged into Application |
+| Strict boundaries | Yes | Flexible |
+| Real-world use | Teaching | Internet |
+
+## Table 8: Stateful vs Stateless
+
+| Feature | Stateful | Stateless |
+|---------|----------|-----------|
+| Server stores client state? | Yes | No |
+| Scalability | Harder (state migration) | Easier (any server works) |
+| Crash recovery | Difficult | Easy (retry to any server) |
+| Examples | TCP, FTP, SSH | HTTP, UDP, DNS, REST |
+| Performance | Can be faster (cached state) | Slightly slower (resend context) |
+| Load balancing | Needs sticky sessions | Simple round-robin |
+| Memory usage | Higher | Lower |

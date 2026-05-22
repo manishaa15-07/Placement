@@ -1,0 +1,382 @@
+# 📘 PART 7: REVISION, STUDY PLANS & RESOURCES
+
+---
+
+# INTERVIEW REVISION SECTION
+
+---
+
+## 7.1 Last-Minute Revision Notes (The One-Pager)
+
+### Layers at a Glance
+```
+OSI: Application → Presentation → Session → Transport → Network → Data Link → Physical
+TCP/IP: Application → Transport → Internet → Network Access
+PDU:   Data → Segment → Packet → Frame → Bits
+```
+
+### Critical Protocols by Layer
+
+| Layer | Protocols | Port |
+|-------|-----------|------|
+| Application | HTTP(80), HTTPS(443), DNS(53), FTP(21/20), SSH(22), SMTP(25), DHCP(67/68), Telnet(23) | See left |
+| Transport | TCP (reliable, connection-oriented), UDP (fast, connectionless) | — |
+| Network | IP, ICMP, ARP, OSPF, RIP, BGP | — |
+| Data Link | Ethernet, Wi-Fi, PPP | — |
+| Physical | Cables, signals, encoding | — |
+
+### Must-Know Processes
+```
+TCP 3-way handshake: SYN → SYN+ACK → ACK
+TCP 4-way close:     FIN → ACK → FIN → ACK (+ TIME_WAIT 2×MSL)
+DHCP DORA:           Discover → Offer → Request → Acknowledge
+DNS hierarchy:        Browser cache → OS → Router → ISP → Root → TLD → Authoritative
+ARP:                 Broadcast "Who has IP?" → Unicast reply "I'm at MAC"
+```
+
+### Key Differences (Ultra-Short)
+```
+TCP = reliable, slow, connection | UDP = fast, unreliable, connectionless
+Hub = L1, broadcast all | Switch = L2, MAC-based | Router = L3, IP-based
+IPv4 = 32-bit, 4.3B | IPv6 = 128-bit, no NAT needed
+HTTP = port 80, plaintext | HTTPS = port 443, TLS encrypted
+Forward proxy = hides client | Reverse proxy = hides server
+Flow control = protect receiver | Congestion control = protect network
+GBN = retransmit all from error | SR = retransmit only lost frame
+Static routing = manual | Dynamic = RIP/OSPF/BGP
+Circuit switching = dedicated path | Packet switching = shared, dynamic
+```
+
+---
+
+## 7.2 Important Formulas
+
+| Formula | Context |
+|---------|---------|
+| `Delay = Propagation + Transmission + Processing + Queuing` | Total delay |
+| `Propagation delay = Distance / Speed` | Signal travel time |
+| `Transmission delay = Packet size / Bandwidth` | Time to push bits on wire |
+| `Throughput ≤ Bandwidth` | Always true |
+| `Nyquist: C = 2B log₂(L)` | Max rate, noiseless channel |
+| `Shannon: C = B log₂(1 + SNR)` | Max rate, noisy channel |
+| `Efficiency (S&W) = 1 / (1 + 2a)` | a = prop. delay / tx delay |
+| `Efficiency (Sliding Window) = W / (1 + 2a)` | W = window size, if W ≤ 1+2a |
+| `Full mesh links = n(n-1)/2` | n = number of nodes |
+| `Subnets = 2^(borrowed bits)` | Subnetting |
+| `Hosts = 2^(host bits) - 2` | Usable hosts per subnet |
+| `Block size = 256 - mask value` | Subnet block calculation |
+| `GBN sender window ≤ 2^n - 1` | n = sequence number bits |
+| `SR sender window ≤ 2^(n-1)` | n = sequence number bits |
+| `Hamming parity bits: 2^r ≥ m + r + 1` | m = data bits |
+| `Pure ALOHA efficiency = 1/(2e) ≈ 18.4%` | Maximum throughput |
+| `Slotted ALOHA efficiency = 1/e ≈ 36.8%` | Maximum throughput |
+
+---
+
+## 7.3 Memory Tricks & Mnemonics
+
+### OSI Layers (Top → Bottom)
+**"All People Seem To Need Data Processing"**
+- Application, Presentation, Session, Transport, Network, Data Link, Physical
+
+### OSI Layers (Bottom → Top)
+**"Please Do Not Throw Sausage Pizza Away"**
+- Physical, Data Link, Network, Transport, Session, Presentation, Application
+
+### IP Classes
+**"All Boys Create Deadly Enemies"**
+- Class A (1-126), B (128-191), C (192-223), D (224-239), E (240-255)
+
+### TCP Flags
+**"Unskilled Attackers Pester Real Security Folks"**
+- URG, ACK, PSH, RST, SYN, FIN
+
+### DHCP Process
+**"DORA the Explorer"**
+- Discover, Offer, Request, Acknowledge
+
+### Port Numbers (Common)
+```
+"FTP loves SSH" → 21, 22
+"Telnet then SMTP" → 23, 25
+"DNS is key" → 53
+"HTTP is 80, HTTPS is 443" → remember by adding 363
+"DHCP: Server 67, Client 68" → sequential pair
+```
+
+### Private IP Ranges
+```
+10.x.x.x           → "10 is TEN" (Class A, one range)
+172.16-31.x.x       → "172 middle" (Class B, 16 ranges)
+192.168.x.x         → "Home sweet 192.168" (Class C, most common)
+```
+
+### Subnetting Power of 2
+```
+2^1=2, 2^2=4, 2^3=8, 2^4=16, 2^5=32, 2^6=64, 2^7=128, 2^8=256
+Corresponding CIDR masks (/24→/32):
+/25=128, /26=192, /27=224, /28=240, /29=248, /30=252, /31=254, /32=255
+```
+
+---
+
+## 7.4 Frequently Forgotten Concepts
+
+1. **ARP is needed every time** a packet crosses to a new network segment (each hop does its own ARP)
+2. **Router decrements TTL** by 1 at each hop; if TTL=0, packet dropped + ICMP sent
+3. **ICMP is not a transport protocol** — it's a network layer companion to IP
+4. **DNS uses UDP for queries** (port 53) but **TCP for zone transfers** (also port 53)
+5. **FTP uses 2 ports:** 21 (control) and 20 (data in active mode)
+6. **HTTP is stateless** — cookies/sessions are added at the application level
+7. **Switch doesn't change MAC addresses** in frames — it just forwards
+8. **Router changes MAC** in frames (new frame for each hop) but **keeps IP unchanged** (unless NAT)
+9. **TCP Checksum is mandatory**, UDP Checksum is optional in IPv4 (mandatory in IPv6)
+10. **Fragmentation offset is in units of 8 bytes**, not regular bytes
+11. **TCP sequence numbers count bytes**, not segments
+12. **3 duplicate ACKs = 4 total ACKs** (1 original + 3 duplicates) triggers fast retransmit
+13. **TIME_WAIT = 2 × MSL** (typically 120 seconds total)
+14. **CIDR /31 is valid** — gives 2 addresses, used for point-to-point links (no network/broadcast needed)
+15. **IPv6 has no broadcast** — uses multicast and anycast instead
+
+---
+
+## 7.5 1-Day Revision Strategy
+
+**For interview tomorrow (8-hour intensive):**
+
+| Time | Activity |
+|------|----------|
+| 9:00-10:00 | Read Part 1: Fundamentals + OSI/TCP-IP (skim, focus on tables) |
+| 10:00-11:30 | Read Part 2: Data Link + Network Layer (focus on subnetting examples) |
+| 11:30-12:30 | Read Part 3: Transport + Application (TCP handshake, DNS, HTTP) |
+| 12:30-1:00 | Lunch break |
+| 1:00-2:00 | Read Part 4: Security + Modern Networking (TLS, CDN, LB) |
+| 2:00-3:30 | Study ALL comparison tables in Part 5 |
+| 3:30-5:00 | Practice interview questions (Part 5) — say answers out loud |
+| 5:00-5:30 | Review rapid-fire questions |
+| 5:30-6:00 | Review this revision section — formulas, mnemonics, forgotten concepts |
+
+**Key rule:** Don't try to learn new things. Focus on recalling what you already know.
+
+---
+
+## 7.6 7-Day Revision Strategy
+
+| Day | Focus | Time |
+|-----|-------|------|
+| **Day 1** | Fundamentals + OSI/TCP-IP model + Physical Layer | 3-4 hrs |
+| **Day 2** | Data Link Layer (framing, CRC, Hamming, flow control) | 3-4 hrs |
+| **Day 3** | Network Layer (IP, subnetting, routing, ARP, NAT) | 3-4 hrs |
+| **Day 4** | Transport Layer (TCP deep dive, congestion control) | 3-4 hrs |
+| **Day 5** | Application Layer + Security (HTTP, DNS, TLS, attacks) | 3-4 hrs |
+| **Day 6** | Modern Networking + All comparison tables | 3 hrs |
+| **Day 7** | Interview questions + rapid fire + revision notes | 4 hrs |
+
+**Daily routine:** 30 min revising previous day's notes before starting new topic.
+
+---
+
+## 7.7 30-Day Mastery Plan
+
+| Week | Days | Topics | Daily Hours |
+|------|------|--------|-------------|
+| **Week 1** | 1-7 | Fundamentals, OSI, TCP/IP, Physical Layer | 2-3 hrs |
+| **Week 2** | 8-14 | Data Link + Network Layer + Subnetting practice | 2-3 hrs |
+| **Week 3** | 15-21 | Transport + Application + Security | 2-3 hrs |
+| **Week 4** | 22-28 | Modern Networking + Interview prep + Practice | 2-3 hrs |
+| **Final** | 29-30 | Full revision + mock interview practice | 4 hrs |
+
+---
+
+# STUDY PLANS
+
+---
+
+## 30-Day Intensive CN Roadmap
+
+> For students with 2-3 hours/day who need quick placement prep.
+
+| Day | Topic | Key Activities |
+|-----|-------|---------------|
+| 1 | Network basics | Types, topologies, transmission modes |
+| 2 | Performance metrics | Bandwidth, latency, throughput, switching types |
+| 3 | OSI Model (L1-L4) | Physical, Data Link, Network, Transport layers |
+| 4 | OSI Model (L5-L7) + TCP/IP | Session, Presentation, Application + TCP/IP comparison |
+| 5 | Physical Layer | Signals, media, encoding, multiplexing |
+| 6 | Data Link: Framing + Error | Framing, parity, CRC calculation practice |
+| 7 | Data Link: Hamming Code | Hamming code calculation + practice problems |
+| 8 | Flow Control: Stop-and-Wait | Protocol mechanics, efficiency calculation |
+| 9 | Flow Control: GBN + SR | Window sizes, retransmission, comparison |
+| 10 | MAC + Ethernet + Switching | MAC protocols, CSMA/CD, switch operation |
+| 11 | VLANs + Review DLL | VLAN concepts, revise all Data Link topics |
+| 12 | IPv4 Addressing | Classes, special addresses, private ranges |
+| 13 | Subnetting (Basic) | Simple subnetting with worked examples |
+| 14 | Subnetting (Advanced) | VLSM, CIDR, practice 10+ problems |
+| 15 | IPv6 + Comparison | IPv6 features, IPv4 vs IPv6 table |
+| 16 | Routing: RIP + OSPF | Distance vector vs link state, algorithms |
+| 17 | ARP + ICMP + NAT | How each works, interview questions |
+| 18 | Fragmentation + Review | IP fragmentation, revise Network Layer |
+| 19 | TCP Deep Dive | Header, 3-way handshake, 4-way termination |
+| 20 | TCP Reliability + Flow Control | Sliding window, reliability mechanisms |
+| 21 | TCP Congestion Control | Slow start, AIMD, fast retransmit/recovery, variants |
+| 22 | UDP + TCP vs UDP | UDP mechanics, comparison table, use cases |
+| 23 | HTTP + HTTPS + DNS | HTTP methods/codes, TLS, DNS resolution |
+| 24 | DHCP + Email + FTP + SSH | DORA, SMTP/POP3/IMAP, FTP modes |
+| 25 | Network Security | Encryption, TLS handshake, firewalls, VPN |
+| 26 | Attacks + Authentication | Common attacks, defenses, auth methods |
+| 27 | Modern Networking | CDN, load balancer, cloud networking |
+| 28 | All Comparison Tables | TCP/UDP, IPv4/6, Hub/Switch/Router, etc. |
+| 29 | Interview Questions | Practice beginner → advanced questions |
+| 30 | Final Revision | Formulas, mnemonics, rapid-fire, mock interview |
+
+---
+
+## 60-Day Standard CN Roadmap
+
+> For students with 1.5-2 hours/day who want thorough preparation.
+
+| Week | Topics | Activities |
+|------|--------|-----------|
+| **1** | Fundamentals + OSI | Basics, topologies, metrics, OSI 7 layers |
+| **2** | TCP/IP + Physical Layer | TCP/IP model, signals, media, encoding, multiplexing |
+| **3** | Data Link Layer (Part 1) | Framing, error detection, CRC, Hamming code |
+| **4** | Data Link Layer (Part 2) | Flow control (S&W, GBN, SR), MAC, Ethernet |
+| **5** | Network Layer (Part 1) | IPv4, subnetting (20+ practice problems), CIDR |
+| **6** | Network Layer (Part 2) | IPv6, routing (RIP, OSPF, BGP), ARP, ICMP, NAT |
+| **7** | Transport Layer | TCP (handshake, reliability, flow/congestion control), UDP |
+| **8** | Application Layer | HTTP/1.1/2/3, DNS, DHCP, email, FTP, SSH, WebSockets |
+| **9** | Security + Modern Networking | TLS, VPN, attacks, CDN, LB, cloud networking |
+| **10-11** | Practicals | Wireshark exercises, Linux commands, 1 mini project |
+| **12** | Interview Prep | All comparison tables, interview questions, mock interviews |
+| **13-14** | Practice + Revision | Previous year questions, rapid fire, final revision |
+| **15-17** | Buffer | Weak areas, additional practice, mock interviews |
+
+**Weekly Targets:**
+- Solve 5+ numerical problems
+- Write 3+ short notes from memory
+- Practice 10+ interview questions aloud
+
+---
+
+## 90-Day Comprehensive CN Roadmap
+
+> For students who want complete mastery — theory + practical + projects.
+
+| Week | Topics | Activities | Hours/Day |
+|------|--------|-----------|-----------|
+| **1-2** | Fundamentals + Models | Basics through Physical Layer | 1.5 |
+| **3-4** | Data Link Layer | Framing → VLANs, all protocols | 1.5 |
+| **5-6** | Network Layer | IP → Fragmentation, 30+ subnetting problems | 2 |
+| **7-8** | Transport Layer | TCP deep dive, congestion control mastery | 2 |
+| **9-10** | Application Layer | All protocols, "what happens when" complete answer | 1.5 |
+| **11** | Network Security | Encryption, TLS, firewalls, VPN, attacks | 1.5 |
+| **12** | Modern Networking | CDN, LB, cloud, containers, microservices | 1.5 |
+| **13-14** | Wireshark + Commands | All Wireshark exercises, Linux commands mastery | 2 |
+| **15-16** | Mini Project 1 | TCP Chat Application (build from scratch) | 2 |
+| **17-18** | Mini Project 2 | HTTP Server or DNS Resolver | 2 |
+| **19** | Cisco Packet Tracer | 5+ labs: LAN, routing, VLAN, DHCP, NAT | 2 |
+| **20-21** | Interview Prep (Beginner) | Beginner + intermediate questions, comparisons | 1.5 |
+| **22-23** | Interview Prep (Advanced) | Product-company questions, tricky questions | 2 |
+| **24-25** | Mock Interviews | Practice with peers, record yourself | 2 |
+| **26** | Full Revision Week | All notes, formulas, rapid fire | 2-3 |
+| **27-30** | Buffer + Strengthen | Weak areas, additional mock interviews | 1.5 |
+
+**Monthly Milestones:**
+- **Month 1:** Complete theory (all layers) + basic subnetting
+- **Month 2:** Practicals done + 1 project complete + intermediate interview prep
+- **Month 3:** Advanced interview prep + mock interviews + mastery
+
+---
+
+# RESOURCES
+
+---
+
+## 📺 Best YouTube Channels
+
+| Channel | Best For | Language |
+|---------|----------|---------|
+| **Gate Smashers** | Gate/placement CN (excellent) | Hindi |
+| **Computer Networking (Kurose)** | Official textbook lectures | English |
+| **Neso Academy** | Clear theory explanations | English |
+| **NetworkChuck** | Practical networking, fun style | English |
+| **PowerCert Animated Videos** | Visual explanations, beginners | English |
+| **Ben Eater** | Hardware-level networking | English |
+| **Knowledge Gate** | Gate exam prep | Hindi |
+| **Jenny's Lectures** | University-style teaching | Hindi/English |
+| **Hussein Nasser** | Backend/system design networking | English |
+| **ByteByteGo** | System design networking concepts | English |
+
+## 📚 Best Books
+
+| Book | Author | Best For |
+|------|--------|----------|
+| **Computer Networking: A Top-Down Approach** | Kurose & Ross | University course + interviews (THE standard textbook) |
+| **Computer Networks** | Tanenbaum & Wetherall | Deep theory, comprehensive |
+| **TCP/IP Illustrated Vol 1** | W. Richard Stevens | TCP/IP mastery (advanced) |
+| **Data Communications and Networking** | Forouzan | Clear explanations, good diagrams |
+| **Computer Networks** (GATE) | various | GATE/placement-specific |
+
+## 🌐 Best Websites
+
+| Website | Use |
+|---------|-----|
+| **GeeksforGeeks (CN section)** | Theory + interview questions + practice |
+| **JavaTPoint (CN tutorial)** | Structured tutorials |
+| **Cisco Networking Academy** | Free courses + Packet Tracer |
+| **Cloudflare Learning Center** | Modern networking (DNS, CDN, DDoS) |
+| **Mozilla MDN (HTTP docs)** | HTTP protocol reference |
+| **RFC documents (ietf.org)** | Official protocol specifications |
+| **Subnet Calculator (subnet-calculator.com)** | Practice subnetting |
+| **Wireshark Wiki** | Packet analysis guides |
+| **Julia Evans' networking zines** | Fun, visual networking explanations |
+| **Beej's Guide to Network Programming** | Socket programming tutorial |
+
+## 🎯 Interview Resources
+
+| Resource | Type |
+|----------|------|
+| **InterviewBit (CN section)** | Curated interview questions |
+| **LeetCode Discuss (CN tag)** | Company-specific questions |
+| **GeeksforGeeks (CN interview)** | Topic-wise interview questions |
+| **Glassdoor** | Company-specific interview experiences |
+| **Pramp** | Mock interview practice |
+
+## 🔬 Practice Platforms & Labs
+
+| Platform | Purpose |
+|----------|---------|
+| **Cisco Packet Tracer** | Network simulation (free) |
+| **GNS3** | Advanced network emulation |
+| **TryHackMe** | Network security hands-on |
+| **HackTheBox** | Advanced networking + security CTF |
+| **Wireshark Sample Captures** | Pre-captured packets for analysis |
+| **OverTheWire (Bandit)** | Linux + networking challenges |
+
+---
+
+## 📝 Final Advice
+
+> [!IMPORTANT]
+> **The #1 interview question:** "What happens when you type google.com in your browser?"
+> If you can answer this in 3-5 minutes covering DNS, TCP, TLS, HTTP, server processing, and rendering — **you've demonstrated strong networking knowledge.**
+
+> [!TIP]
+> **Study strategy that works:**
+> 1. Read the concept
+> 2. Close the book and explain it aloud (Feynman technique)
+> 3. Solve 2-3 related problems
+> 4. Write a short note from memory
+> 5. Revisit after 1 day, 3 days, 7 days (spaced repetition)
+
+> [!NOTE]
+> **For product-based companies (Google, Amazon, Microsoft):**
+> Focus on: TCP internals, congestion control, DNS, HTTP/2-3, CDN, load balancing, system design networking. They care about HOW and WHY, not just WHAT.
+
+> [!NOTE]
+> **For service-based companies (TCS, Infosys, Wipro):**
+> Focus on: OSI model, TCP vs UDP, subnetting, basic protocols, port numbers, comparison tables. They test breadth more than depth.
+
+---
+
+**You now have everything you need. Start with Day 1 of your chosen study plan. Consistency beats intensity. Good luck! 🚀**

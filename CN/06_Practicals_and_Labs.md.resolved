@@ -1,0 +1,488 @@
+# 📘 PART 6: PRACTICALS, LABS & TOOLS
+
+---
+
+# PRACTICAL SECTION
+
+## 🎯 Objective
+- Gain hands-on networking skills
+- Use real tools that network engineers use daily
+- Build portfolio-worthy mini projects
+
+---
+
+## 6.1 Wireshark Learning Roadmap
+
+### Installation
+- Download from [wireshark.org](https://www.wireshark.org)
+- Available on Windows, macOS, Linux
+- Requires admin/root for live capture
+
+### Step-by-Step Learning Path
+
+**Week 1: Basics**
+1. Open Wireshark, select active interface
+2. Start a capture, browse a website, stop capture
+3. Observe the 3-pane view: Packet List, Packet Details, Packet Bytes
+4. Identify different protocols by color coding
+5. Practice stopping, saving, and loading captures (.pcap files)
+
+**Week 2: Filters**
+
+| Filter Type | Syntax | Example |
+|-------------|--------|---------|
+| **Capture filter** (before capture) | BPF syntax | `host 192.168.1.1`, `port 80`, `tcp` |
+| **Display filter** (after capture) | Wireshark syntax | `http`, `tcp.port == 443`, `ip.addr == 10.0.0.1` |
+
+**Essential Display Filters:**
+```
+http                          → Show only HTTP traffic
+dns                           → Show only DNS queries/responses
+tcp.flags.syn == 1            → Show SYN packets (connection starts)
+tcp.flags.fin == 1            → Show FIN packets (connection ends)
+tcp.analysis.retransmission   → Show retransmitted segments
+ip.addr == 192.168.1.100      → Traffic to/from specific IP
+tcp.port == 443               → HTTPS traffic
+!(arp || dns || icmp)         → Exclude common noise
+http.request.method == "POST" → Show only POST requests
+tcp.stream eq 5               → Follow specific TCP stream
+```
+
+**Week 3: Protocol Analysis**
+1. **Capture a DNS query:** Filter `dns`, observe query and response
+2. **Capture TCP handshake:** Filter `tcp.flags.syn == 1`, see SYN → SYN+ACK → ACK
+3. **Capture HTTP request:** Filter `http`, right-click → Follow TCP Stream
+4. **Capture TLS handshake:** Filter `tls.handshake`, observe ClientHello, ServerHello, Certificate
+
+**Week 4: Advanced**
+1. Analyze packet latency (Time column)
+2. Use Statistics → Conversations to see top talkers
+3. Use Statistics → Protocol Hierarchy for traffic breakdown
+4. Export specific packets for reporting
+5. Analyze TCP retransmissions and window size changes
+
+### Key Wireshark Exercises
+- [ ] Capture and analyze a complete `ping` exchange (ICMP)
+- [ ] Trace the full DNS resolution for a domain
+- [ ] Observe the TCP 3-way handshake for an HTTP connection
+- [ ] Capture DHCP DORA process (connect to Wi-Fi and capture)
+- [ ] Analyze an HTTPS connection's TLS handshake
+- [ ] Find retransmissions in a busy capture
+
+---
+
+## 6.2 Packet Analysis Methodology
+
+When analyzing a capture, follow this systematic approach:
+
+```
+1. Get Overview
+   → Statistics → Protocol Hierarchy
+   → Statistics → Conversations
+   → Statistics → Endpoints
+
+2. Identify Anomalies
+   → Look for retransmissions (tcp.analysis.retransmission)
+   → Look for RST packets (tcp.flags.reset == 1)
+   → Look for ICMP errors (icmp.type == 3)
+
+3. Follow Streams
+   → Right-click → Follow → TCP/UDP/HTTP Stream
+   → See complete conversation
+
+4. Timeline Analysis
+   → Sort by time, look for delays
+   → Statistics → IO Graph for throughput over time
+
+5. Extract Data
+   → File → Export Objects → HTTP (extract downloaded files)
+   → Export specific packets as CSV for reporting
+```
+
+---
+
+## 6.3 Essential Linux Networking Commands
+
+### ping — Test Connectivity
+
+```bash
+# Basic ping
+ping google.com
+
+# Ping with count limit
+ping -c 5 google.com
+
+# Ping with specific packet size
+ping -s 1000 google.com
+
+# Ping with interval
+ping -i 0.5 google.com
+```
+
+**What it shows:** RTT (round-trip time), packet loss, TTL
+**Uses ICMP:** Echo Request (type 8) and Echo Reply (type 0)
+
+### traceroute / tracepath — Trace Route to Destination
+
+```bash
+# Basic traceroute
+traceroute google.com
+
+# Use TCP instead of UDP (bypasses some firewalls)
+traceroute -T google.com
+
+# macOS uses traceroute, Linux also has tracepath
+tracepath google.com
+```
+
+**How it works:** Sends packets with incrementing TTL (1, 2, 3...). Each router returns ICMP Time Exceeded, revealing each hop.
+
+### curl — HTTP Client
+
+```bash
+# Basic GET request
+curl https://example.com
+
+# Show headers only
+curl -I https://example.com
+
+# Show headers + body
+curl -v https://example.com
+
+# POST request with data
+curl -X POST -d '{"name":"test"}' -H "Content-Type: application/json" https://api.example.com/users
+
+# Follow redirects
+curl -L https://example.com
+
+# Download file
+curl -O https://example.com/file.pdf
+
+# Show timing information
+curl -w "DNS: %{time_namelookup}s\nConnect: %{time_connect}s\nTLS: %{time_appconnect}s\nTotal: %{time_total}s\n" -o /dev/null -s https://example.com
+```
+
+### netstat / ss — Network Statistics
+
+```bash
+# Show all listening ports
+netstat -tlnp    # Linux
+netstat -an      # macOS
+
+# Modern replacement: ss (Linux)
+ss -tlnp         # TCP listening ports with process info
+ss -ulnp         # UDP listening ports
+ss -s            # Summary statistics
+
+# Show all connections
+ss -ta           # All TCP connections
+ss -t state established  # Only established connections
+```
+
+### nslookup — DNS Lookup
+
+```bash
+# Basic lookup
+nslookup google.com
+
+# Query specific record type
+nslookup -type=MX google.com
+nslookup -type=NS google.com
+nslookup -type=AAAA google.com
+
+# Use specific DNS server
+nslookup google.com 8.8.8.8
+```
+
+### dig — Advanced DNS Lookup
+
+```bash
+# Basic query
+dig google.com
+
+# Query specific record
+dig google.com MX
+dig google.com AAAA
+dig google.com NS
+
+# Short output
+dig +short google.com
+
+# Trace DNS resolution path
+dig +trace google.com
+
+# Reverse DNS lookup
+dig -x 8.8.8.8
+
+# Query specific DNS server
+dig @8.8.8.8 google.com
+```
+
+**dig vs nslookup:** `dig` provides more detailed output and supports `+trace` for following the full DNS resolution path.
+
+### ifconfig / ip — Network Interface Configuration
+
+```bash
+# Show interfaces (macOS/older Linux)
+ifconfig
+
+# Modern Linux equivalent
+ip addr show       # Show all interfaces
+ip link show       # Show link layer info
+ip route show      # Show routing table
+
+# Show specific interface
+ifconfig en0       # macOS
+ip addr show eth0  # Linux
+```
+
+### arp — ARP Table
+
+```bash
+# Show ARP cache
+arp -a
+
+# Linux modern
+ip neigh show
+```
+
+### tcpdump — Command-Line Packet Capture
+
+```bash
+# Capture all traffic on interface
+sudo tcpdump -i eth0
+
+# Capture specific host
+sudo tcpdump host 192.168.1.100
+
+# Capture specific port
+sudo tcpdump port 80
+
+# Capture and save to file (open in Wireshark)
+sudo tcpdump -i eth0 -w capture.pcap
+
+# Capture with verbose output
+sudo tcpdump -i eth0 -v -c 20    # 20 packets, verbose
+```
+
+### iptables — Linux Firewall
+
+```bash
+# List all rules
+sudo iptables -L -n -v
+
+# Block incoming from specific IP
+sudo iptables -A INPUT -s 192.168.1.100 -j DROP
+
+# Allow specific port
+sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+
+# Block all incoming, allow outgoing (basic security)
+sudo iptables -P INPUT DROP
+sudo iptables -P OUTPUT ACCEPT
+```
+
+### route — Routing Table
+
+```bash
+# Show routing table
+route -n          # Linux
+netstat -rn       # macOS
+
+# Modern Linux
+ip route show
+```
+
+### wget — Download Files
+
+```bash
+# Download file
+wget https://example.com/file.pdf
+
+# Download entire website (recursive)
+wget -r -l 2 https://example.com
+
+# Resume interrupted download
+wget -c https://example.com/large-file.iso
+```
+
+---
+
+## 6.4 Socket Programming Basics (Python)
+
+### TCP Server
+
+```python
+import socket
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind(('0.0.0.0', 8080))
+server.listen(5)
+print("Server listening on port 8080...")
+
+while True:
+    client_socket, address = server.accept()
+    print(f"Connection from {address}")
+    
+    data = client_socket.recv(1024).decode()
+    print(f"Received: {data}")
+    
+    client_socket.send("Hello from server!".encode())
+    client_socket.close()
+```
+
+### TCP Client
+
+```python
+import socket
+
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect(('127.0.0.1', 8080))
+
+client.send("Hello from client!".encode())
+response = client.recv(1024).decode()
+print(f"Server response: {response}")
+
+client.close()
+```
+
+### UDP Server
+
+```python
+import socket
+
+server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+server.bind(('0.0.0.0', 9090))
+print("UDP Server listening on port 9090...")
+
+while True:
+    data, address = server.recvfrom(1024)
+    print(f"Received from {address}: {data.decode()}")
+    server.sendto("ACK".encode(), address)
+```
+
+### UDP Client
+
+```python
+import socket
+
+client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+client.sendto("Hello UDP!".encode(), ('127.0.0.1', 9090))
+response, server = client.recvfrom(1024)
+print(f"Response: {response.decode()}")
+client.close()
+```
+
+**Key Differences in Code:**
+- TCP: `SOCK_STREAM`, uses `connect()`, `send()`, `recv()`
+- UDP: `SOCK_DGRAM`, uses `sendto()`, `recvfrom()` (no connection)
+
+---
+
+## 6.5 Mini Projects
+
+### Project 1: Simple Chat Application (TCP)
+- Build a multi-client chat server using Python sockets
+- Implement threading for handling multiple clients
+- Add username support and message broadcasting
+- **Skills:** TCP, sockets, multithreading, client-server
+
+### Project 2: DNS Resolver
+- Build a DNS resolver from scratch that queries root → TLD → authoritative
+- Parse DNS packet format (header, question, answer sections)
+- Implement caching with TTL
+- **Skills:** DNS, UDP sockets, packet parsing
+
+### Project 3: HTTP Server
+- Build a basic HTTP/1.1 server that serves static files
+- Support GET requests, parse URL paths
+- Return proper status codes (200, 404, 500)
+- Add basic logging
+- **Skills:** HTTP, TCP, request parsing, file I/O
+
+### Project 4: Packet Sniffer
+- Build a raw packet sniffer using Python's `scapy` library
+- Decode Ethernet, IP, TCP, UDP headers
+- Display live traffic with filtering
+- **Skills:** Protocol understanding, raw sockets, binary parsing
+
+### Project 5: Port Scanner
+- Build a TCP port scanner (like a simplified nmap)
+- Implement SYN scan, connect scan
+- Add threading for speed
+- Display open/closed/filtered ports
+- **Skills:** TCP, socket programming, multithreading
+
+### Project 6: Network Monitoring Dashboard
+- Use Python + Flask to build a web-based network monitor
+- Ping multiple hosts and display status
+- Show latency graphs over time
+- Alert on host down
+- **Skills:** ICMP, web development, data visualization
+
+---
+
+## 6.6 Lab Exercises
+
+### Lab 1: Subnet Calculator
+Write a program that given an IP and CIDR prefix:
+- Calculates network address, broadcast address
+- First and last usable host
+- Number of usable hosts
+- Subnet mask in dotted decimal
+
+### Lab 2: CRC Calculator
+Write a program that:
+- Takes data bits and generator polynomial
+- Performs CRC division (XOR)
+- Outputs the CRC remainder and final transmitted data
+
+### Lab 3: Hamming Code
+Write a program that:
+- Takes data bits, calculates parity bits, creates Hamming codeword
+- Introduces a single-bit error
+- Detects and corrects the error
+
+### Lab 4: Stop-and-Wait Simulation
+Simulate the Stop-and-Wait protocol:
+- Sender sends frame, waits for ACK
+- Introduce random packet loss
+- Implement timeout and retransmission
+- Calculate throughput/efficiency
+
+### Lab 5: Routing Table Simulation
+Simulate a network with 5+ routers:
+- Implement distance vector (Bellman-Ford) routing
+- Show routing table updates over iterations
+- Demonstrate count-to-infinity problem
+
+---
+
+## 6.7 Cisco Packet Tracer
+
+### What Is It?
+- Free network simulation tool by Cisco
+- Create virtual networks with routers, switches, PCs
+- Configure protocols without real hardware
+- Download from [netacad.com](https://www.netacad.com)
+
+### Essential Exercises
+
+| Exercise | What You Learn |
+|----------|---------------|
+| Create a basic LAN with 4 PCs and a switch | Switching, MAC addresses |
+| Connect two LANs with a router | Routing, IP addressing |
+| Configure DHCP server | DHCP DORA process |
+| Set up VLANs on a switch | VLAN segmentation |
+| Configure static routing between 3 routers | Routing tables |
+| Configure OSPF on a multi-router network | Dynamic routing |
+| Set up ACLs (Access Control Lists) | Firewall basics |
+| Build a DNS server | DNS resolution |
+| Configure NAT/PAT | Address translation |
+| Create a full enterprise network | Integration of all concepts |
+
+### Other Simulation Tools
+- **GNS3** — Advanced, uses real Cisco IOS images
+- **EVE-NG** — Enterprise-grade network emulator
+- **Mininet** — SDN (Software Defined Networking) simulator
+- **NS-3** — Academic network simulator for research

@@ -1,0 +1,436 @@
+# 📘 PART 4: NETWORK SECURITY & MODERN NETWORKING
+
+---
+
+# PHASE 9: NETWORK SECURITY
+
+## 🎯 Learning Objectives
+- Understand encryption fundamentals
+- Know SSL/TLS handshake deeply
+- Understand firewalls, VPNs, proxies
+- Know common attacks and defenses
+
+---
+
+## 9.1 Encryption Basics
+
+### Symmetric vs Asymmetric Encryption
+
+| Feature | Symmetric | Asymmetric |
+|---------|-----------|------------|
+| **Keys** | Same key for encrypt & decrypt | Public key + Private key pair |
+| **Speed** | Fast | Slow (100-1000x slower) |
+| **Key distribution** | Hard (how to share key securely?) | Easy (public key is public) |
+| **Examples** | AES, DES, 3DES, ChaCha20 | RSA, ECC, Diffie-Hellman |
+| **Use cases** | Bulk data encryption | Key exchange, digital signatures |
+| **Analogy** | Same physical key for lock/unlock | Mailbox: anyone can drop mail in (public), only owner opens (private) |
+
+**Real-World Usage (TLS):** Use asymmetric encryption to securely exchange a symmetric key, then use the symmetric key for fast data encryption. **Best of both worlds!**
+
+### Hashing
+- **Purpose:** One-way transformation producing fixed-size digest
+- **Properties:** Deterministic, irreversible, collision-resistant
+- **Examples:** MD5 (broken), SHA-1 (deprecated), SHA-256 (current standard)
+- **Use:** Password storage, data integrity verification, digital signatures
+
+### Digital Signatures
+```
+Sender:   Hash(message) → Encrypt hash with PRIVATE key = Signature
+Receiver: Decrypt signature with PUBLIC key → Compare with Hash(message)
+          If match: authentic and untampered ✓
+```
+
+### Digital Certificates
+- Issued by **Certificate Authorities (CAs)** — trusted third parties
+- Contains: Owner's public key, owner's identity, CA's digital signature, validity period
+- **Chain of Trust:** Root CA → Intermediate CA → Server Certificate
+- **Browser verification:** Browser has pre-installed root CA certificates
+
+---
+
+## 9.2 SSL/TLS (Secure Sockets Layer / Transport Layer Security)
+
+**SSL is deprecated → TLS is the current standard (TLS 1.3 is latest)**
+
+### TLS 1.2 Handshake (Detailed)
+
+```
+Client                                    Server
+  │                                         │
+  │── ClientHello ─────────────────────────►│
+  │   (TLS version, supported ciphers,      │
+  │    client random number)                 │
+  │                                         │
+  │◄── ServerHello ────────────────────────│
+  │   (chosen cipher, server random)        │
+  │◄── Certificate ────────────────────────│
+  │   (server's X.509 certificate)          │
+  │◄── ServerHelloDone ───────────────────│
+  │                                         │
+  │   [Client verifies certificate          │
+  │    against trusted CAs]                 │
+  │                                         │
+  │── ClientKeyExchange ──────────────────►│
+  │   (pre-master secret encrypted with     │
+  │    server's public key)                 │
+  │── ChangeCipherSpec ───────────────────►│
+  │── Finished (encrypted) ───────────────►│
+  │                                         │
+  │◄── ChangeCipherSpec ──────────────────│
+  │◄── Finished (encrypted) ──────────────│
+  │                                         │
+  │      Encrypted communication begins     │
+```
+
+### TLS 1.3 Improvements
+- **1-RTT handshake** (vs 2-RTT in TLS 1.2)
+- **0-RTT resumption** for returning clients
+- Removed weak ciphers (RSA key exchange, CBC mode, etc.)
+- **Only 5 cipher suites** (vs 37+ in TLS 1.2)
+- Forward secrecy mandatory
+
+**🎤 Interview Q:** *What is forward secrecy?*
+**A:** Even if the server's private key is compromised in the future, past session data cannot be decrypted. Achieved by using ephemeral Diffie-Hellman keys — each session generates unique keys that are discarded after use.
+
+---
+
+## 9.3 Firewalls
+
+**Purpose:** Monitor and filter incoming/outgoing network traffic based on security rules.
+
+### Types
+
+| Type | Layer | How It Works | Pros/Cons |
+|------|-------|-------------|-----------|
+| **Packet Filter** | L3-L4 | Examines headers (IP, port, protocol) | Fast but can't inspect payload |
+| **Stateful Inspection** | L3-L4 | Tracks connection state | Better security than packet filter |
+| **Application Gateway (Proxy)** | L7 | Inspects application data | Most secure but slow |
+| **Next-Gen Firewall (NGFW)** | L3-L7 | Deep packet inspection + IDS/IPS | Enterprise standard |
+
+### Firewall Rules Example
+```
+Rule 1: ALLOW TCP from 192.168.1.0/24 to any port 443 (HTTPS out)
+Rule 2: ALLOW TCP from any port 443 to 192.168.1.0/24 ESTABLISHED
+Rule 3: DENY all from any to 192.168.1.0/24 (block everything else)
+```
+
+---
+
+## 9.4 VPN (Virtual Private Network)
+
+**Purpose:** Creates an encrypted tunnel over a public network (internet).
+
+**Real-World Analogy:** A private, soundproof tunnel through a public subway — nobody outside can see or hear what's inside.
+
+### VPN Types
+
+| Type | Use Case | Protocol |
+|------|----------|----------|
+| **Remote Access VPN** | Employee → Corporate network | SSL VPN, IPSec |
+| **Site-to-Site VPN** | Office A ↔ Office B | IPSec |
+| **Client-based** | Install VPN client software | OpenVPN, WireGuard |
+| **Clientless (SSL VPN)** | Browser-based access | HTTPS/TLS |
+
+### VPN Protocols
+
+| Protocol | Security | Speed | Port |
+|----------|----------|-------|------|
+| **IPSec** | High | Good | UDP 500/4500 |
+| **OpenVPN** | High | Good | UDP 1194 / TCP 443 |
+| **WireGuard** | High | Fastest | UDP 51820 |
+| **L2TP/IPSec** | High | Moderate | UDP 1701 |
+| **PPTP** | Weak (broken!) | Fast | TCP 1723 |
+
+---
+
+## 9.5 Proxy Servers
+
+**Purpose:** Intermediary between client and server.
+
+### Forward Proxy
+```
+Client ──► Forward Proxy ──► Internet ──► Server
+```
+- **Client-side** — client knows about the proxy
+- **Uses:** Anonymity, content filtering, caching, bypass geo-restrictions
+- **Example:** Corporate proxy that blocks social media
+
+### Reverse Proxy
+```
+Client ──► Internet ──► Reverse Proxy ──► Backend Server(s)
+```
+- **Server-side** — client doesn't know about the proxy
+- **Uses:** Load balancing, SSL termination, caching, security (WAF)
+- **Example:** Nginx in front of application servers
+
+**🎤 Interview Q:** *What's the difference between a forward proxy and a reverse proxy?*
+**A:** Forward proxy sits in front of **clients** (hides client identity); reverse proxy sits in front of **servers** (hides server identity). Forward proxy is used by clients to access the internet; reverse proxy is used by servers to handle incoming traffic.
+
+---
+
+## 9.6 Common Network Attacks
+
+| Attack | Description | Layer | Defense |
+|--------|-------------|-------|---------|
+| **DDoS** | Flood server with traffic to overwhelm it | L3-L7 | Rate limiting, CDN, WAF |
+| **Man-in-the-Middle** | Intercept communication between two parties | L2-L7 | TLS, certificate pinning |
+| **ARP Spoofing** | Fake ARP replies to redirect traffic | L2 | Static ARP, DAI |
+| **DNS Spoofing** | Fake DNS response with wrong IP | L7 | DNSSEC, DoH |
+| **SYN Flood** | Send many SYNs without completing handshake | L4 | SYN cookies, rate limiting |
+| **IP Spoofing** | Forge source IP address | L3 | Ingress filtering, BCP38 |
+| **Phishing** | Social engineering via fake websites/emails | L7 | User education, 2FA |
+| **SQL Injection** | Inject SQL via input fields | L7 | Parameterized queries, WAF |
+| **XSS** | Inject malicious scripts into web pages | L7 | Input sanitization, CSP |
+| **Packet Sniffing** | Capture unencrypted network traffic | L2 | Encryption (TLS), VPN |
+
+**🎤 Interview Q:** *How does a SYN flood attack work?*
+**A:** Attacker sends many SYN packets with spoofed source IPs. Server allocates resources for each half-open connection (SYN_RECEIVED state) and sends SYN+ACK to fake IPs that never respond. Server's connection table fills up, denying service to legitimate users. **Defense:** SYN cookies — server doesn't allocate resources until the 3-way handshake completes.
+
+---
+
+## 9.7 Authentication Mechanisms
+
+| Method | How It Works |
+|--------|-------------|
+| **Password** | Something you know (weakest alone) |
+| **MFA/2FA** | Combines 2+ factors (know + have + are) |
+| **Certificate-based** | X.509 certificates (mutual TLS) |
+| **OAuth 2.0** | Delegated authorization (login with Google) |
+| **JWT** | JSON Web Tokens — self-contained auth tokens |
+| **Kerberos** | Ticket-based (used in Windows AD) |
+| **RADIUS** | Centralized auth for network access |
+
+---
+
+# PHASE 10: MODERN NETWORKING
+
+## 🎯 Learning Objectives
+- Understand CDNs, load balancers, and reverse proxies
+- Know cloud networking fundamentals
+- Understand container and microservices networking
+- Be ready for system design networking questions
+
+---
+
+## 10.1 CDN (Content Delivery Network) ⭐
+
+**Purpose:** Distribute content to geographically close servers to reduce latency.
+
+```
+Without CDN:
+User (India) ──────── 200ms ──────── Server (USA)
+
+With CDN:
+User (India) ──── 20ms ──── CDN Edge (India) ←── cached from ──── Origin (USA)
+```
+
+**How It Works:**
+1. First request: CDN edge fetches from origin, caches it
+2. Subsequent requests: Served from edge cache (fast!)
+3. Cache expires → re-fetch from origin
+
+**CDN Benefits:**
+- ⚡ Reduced latency (closer to user)
+- 🛡️ DDoS protection (absorbs attack traffic)
+- 📉 Reduced origin server load
+- 🌍 Global availability
+
+**Popular CDNs:** Cloudflare, AWS CloudFront, Akamai, Fastly
+
+**🎤 Interview Q:** *How does a CDN know which edge server to route to?*
+**A:** DNS-based routing — CDN's DNS server returns the IP of the nearest/best-performing edge server based on the user's location (using GeoDNS or anycast).
+
+---
+
+## 10.2 Load Balancer ⭐⭐
+
+**Purpose:** Distribute incoming traffic across multiple servers for high availability and performance.
+
+```
+                     ┌─── Server 1
+Client ──► Load ────┤─── Server 2
+           Balancer  ├─── Server 3
+                     └─── Server 4
+```
+
+### Types
+
+| Type | Layer | What It Inspects |
+|------|-------|-----------------|
+| **L4 Load Balancer** | Transport | IP + Port (fast, no content inspection) |
+| **L7 Load Balancer** | Application | HTTP headers, URL, cookies (smart routing) |
+
+### Algorithms
+
+| Algorithm | How | Use When |
+|-----------|-----|----------|
+| **Round Robin** | Rotate sequentially | Servers are equal |
+| **Weighted Round Robin** | More weight = more traffic | Servers differ in capacity |
+| **Least Connections** | Route to server with fewest active connections | Variable request lengths |
+| **IP Hash** | Hash of client IP → consistent server | Session persistence needed |
+| **Least Response Time** | Route to fastest-responding server | Performance-critical |
+| **Random** | Random selection | Simple, surprisingly effective |
+
+### Health Checks
+- Load balancer periodically pings servers
+- Unhealthy servers removed from pool
+- When recovered, added back
+
+**🎤 Interview Q:** *What happens when a load balancer goes down?*
+**A:** Use **redundant load balancers** — active-passive (failover) or active-active (both handle traffic). Virtual IP (VIP) floats to the standby LB. Often combined with DNS failover.
+
+---
+
+## 10.3 Cloud Networking Essentials
+
+### VPC (Virtual Private Cloud)
+- Your own isolated network in the cloud
+- You control: IP range, subnets, route tables, gateways
+
+### Key Components
+
+| Component | Purpose |
+|-----------|---------|
+| **Subnet** | Segment of VPC (public/private) |
+| **Internet Gateway** | Connect VPC to internet |
+| **NAT Gateway** | Let private subnet access internet (outbound only) |
+| **Security Group** | Instance-level firewall (stateful) |
+| **NACL** | Subnet-level firewall (stateless) |
+| **Route Table** | Determines traffic routing within VPC |
+| **VPC Peering** | Connect two VPCs privately |
+| **Transit Gateway** | Hub to connect multiple VPCs |
+
+### Public vs Private Subnet
+
+```
+Internet
+    │
+    ▼
+┌─ Internet Gateway ─┐
+│   Public Subnet     │  ← Web servers (has public IP)
+│   [EC2] [EC2] [ALB] │
+└─────────┬───────────┘
+          │
+┌─────────▼───────────┐
+│   Private Subnet    │  ← Database servers (no public IP)
+│   [RDS] [EC2]       │
+│   ↓ NAT Gateway     │  → Can access internet for updates
+└─────────────────────┘
+```
+
+---
+
+## 10.4 Container Networking
+
+### Docker Networking
+
+| Mode | Description |
+|------|-------------|
+| **Bridge** | Default; containers share a virtual bridge network on host |
+| **Host** | Container uses host's network directly (no isolation) |
+| **None** | No networking |
+| **Overlay** | Multi-host networking (Docker Swarm) |
+
+### Kubernetes Networking
+
+**Core Rules:**
+1. Every pod gets its own IP address
+2. Pods can communicate without NAT
+3. Agents on a node can communicate with all pods on that node
+
+**Key Concepts:**
+
+| Concept | Purpose |
+|---------|---------|
+| **ClusterIP** | Internal service discovery (default) |
+| **NodePort** | Expose service on each node's IP |
+| **LoadBalancer** | Cloud load balancer for external traffic |
+| **Ingress** | HTTP/HTTPS routing rules (L7 routing) |
+| **Network Policy** | Firewall rules between pods |
+
+---
+
+## 10.5 Microservices Networking
+
+### Service Communication Patterns
+
+| Pattern | Type | Use Case |
+|---------|------|----------|
+| **REST/HTTP** | Synchronous | CRUD operations, simple queries |
+| **gRPC** | Synchronous | High-performance, inter-service |
+| **Message Queue** | Asynchronous | Decoupled processing (RabbitMQ, Kafka) |
+| **Event Streaming** | Asynchronous | Real-time data pipelines (Kafka) |
+
+### Service Discovery
+- **Problem:** Services have dynamic IPs (containers restart, scale)
+- **Solution:** Service registry (Consul, etcd, K8s DNS)
+- Services register themselves; clients look up the registry
+
+### Service Mesh
+- **What:** Infrastructure layer for service-to-service communication
+- **Provides:** mTLS, load balancing, observability, retries, circuit breaking
+- **Examples:** Istio, Linkerd, Envoy
+- **How:** Sidecar proxy next to each service
+
+### API Gateway
+- Single entry point for all client requests
+- **Functions:** Authentication, rate limiting, routing, response caching, protocol translation
+- **Examples:** Kong, AWS API Gateway, Nginx
+
+---
+
+## 10.6 Web Architecture Networking (System Design) ⭐
+
+### "What happens when you type google.com" — Complete Answer
+
+```
+1. URL Parsing
+   → Browser parses protocol (HTTPS), domain (google.com), path (/)
+
+2. DNS Resolution
+   → Browser cache → OS cache → Router → ISP DNS → Root → .com TLD → google.com authoritative
+   → Returns IP (e.g., 142.250.190.14)
+
+3. TCP Connection
+   → 3-way handshake with 142.250.190.14:443
+
+4. TLS Handshake
+   → ClientHello → ServerHello + Cert → Key Exchange → Encrypted channel
+
+5. HTTP Request
+   → GET / HTTP/2 with headers (Host, Accept, User-Agent, Cookies)
+
+6. Load Balancer
+   → Google's LB routes to an available server
+
+7. Server Processing
+   → Application logic, database queries, response generation
+
+8. HTTP Response
+   → Status 200, HTML content, cache headers
+
+9. Rendering
+   → Browser parses HTML → builds DOM → fetches CSS/JS/images → paints page
+
+10. Additional Requests
+    → CSS, JS, images, fonts (may come from CDN)
+    → Each triggers DNS → TCP → TLS → HTTP cycle
+```
+
+**This is THE most asked system design / networking interview question. Know every step!**
+
+---
+
+## 📝 Phase 9-10 Revision Box
+
+> **Quick Recall:**
+> - TLS = Asymmetric (key exchange) + Symmetric (data encryption)
+> - TLS 1.3: 1-RTT, 0-RTT resume, forward secrecy mandatory
+> - Forward proxy → hides client | Reverse proxy → hides server
+> - CDN → cache at edge for low latency + DDoS protection
+> - Load balancer → L4 (fast, TCP) vs L7 (smart, HTTP)
+> - VPC: Public subnet (internet-facing) + Private subnet (internal)
+> - Docker: Bridge (default), Host, Overlay (multi-host)
+> - Service mesh: sidecar proxy for mTLS, observability, resilience
+> - SYN flood → SYN cookies | DDoS → CDN + rate limiting
+> - Certificate chain: Root CA → Intermediate CA → Server cert
